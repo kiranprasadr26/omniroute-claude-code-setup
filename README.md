@@ -1,14 +1,25 @@
 # OmniRoute + Claude Code — Windows Setup
 
-A simple guide to configure **OmniRoute as a local AI proxy for Claude Code on Windows**.
+A complete Windows setup guide for using **OmniRoute as a local AI gateway for Claude Code**.
 
-This setup allows Claude Code to connect to OmniRoute through a local endpoint:
+This setup allows Claude Code to send Anthropic-compatible requests to a local OmniRoute instance. OmniRoute then routes those requests to the providers and models configured in its dashboard.
 
 ```text
-http://localhost:20128/v1
+Claude Code
+     │
+     │ Anthropic API
+     ▼
+OmniRoute
+localhost:20128
+     │
+     ├── Anthropic
+     ├── OpenRouter
+     ├── GitHub Models
+     ├── OpenAI
+     └── Other configured providers
 ```
 
-OmniRoute can then route requests to the AI providers/models configured in OmniRoute.
+> **Important:** For Claude Code, the OmniRoute base URL is `http://localhost:20128` — **do not append `/v1`** to `ANTHROPIC_BASE_URL`.
 
 ---
 
@@ -18,110 +29,87 @@ OmniRoute can then route requests to the AI providers/models configured in OmniR
                          ┌──────────────────────┐
                          │     Claude Code      │
                          │                      │
-                         │  claude              │
+                         │       claude         │
                          └──────────┬───────────┘
                                     │
-                                    │ HTTP
+                                    │ Anthropic API
+                                    │
                                     ▼
                          ┌──────────────────────┐
                          │      OmniRoute       │
                          │                      │
-                         │ localhost:20128      │
+                         │   localhost:20128    │
                          └──────────┬───────────┘
                                     │
-                  ┌─────────────────┼─────────────────┐
-                  │                 │                 │
-                  ▼                 ▼                 ▼
-             Provider 1        Provider 2        Provider 3
-                  │                 │                 │
-                  ▼                 ▼                 ▼
-                Model             Model             Model
+                 ┌──────────────────┼──────────────────┐
+                 │                  │                  │
+                 ▼                  ▼                  ▼
+            Anthropic          OpenRouter        GitHub Models
+                 │                  │                  │
+                 ▼                  ▼                  ▼
+              Models             Models             Models
 ```
+
+Claude Code communicates with OmniRoute locally.
+
+OmniRoute handles the connection to the configured upstream providers.
 
 ---
 
 # 🚀 Prerequisites
 
-Before starting, make sure you have:
+Make sure the following are installed:
 
 * Windows 10 or Windows 11
 * Node.js LTS
 * npm
-* Git
+* Git (optional)
 * Claude Code
 * OmniRoute
 
----
-
-# 1. Check Node.js and npm
-
-Open **Command Prompt (CMD)**.
-
-Run:
+Check Node.js:
 
 ```cmd
 node -v
 ```
 
-Then:
+Check npm:
 
 ```cmd
 npm -v
 ```
 
-Example:
-
-```text
-C:\> node -v
-v22.x.x
-
-C:\> npm -v
-10.x.x
-```
-
-If both commands return a version number, Node.js and npm are installed correctly.
-
 ---
 
-# 2. Install Claude Code
+# 📦 1. Install Claude Code and OmniRoute
 
-Install Claude Code globally:
+Open **Command Prompt (`cmd.exe`)**.
+
+Install both packages:
 
 ```cmd
-npm install -g @anthropic-ai/claude-code
+npm install -g @anthropic-ai/claude-code omniroute
 ```
 
-Verify:
+Verify Claude Code:
 
 ```cmd
 claude --version
 ```
 
-If the version is displayed, Claude Code is installed.
-
----
-
-# 3. Install OmniRoute
-
-Install OmniRoute globally:
-
-```cmd
-npm install -g omniroute
-```
-
-Verify:
+Verify OmniRoute:
 
 ```cmd
 omniroute --help
 ```
 
-If the help information is displayed, OmniRoute is installed correctly.
+If both commands work, the installation is complete.
 
 ---
 
-# 4. Start OmniRoute
+# 🌐 2. Start OmniRoute
 
-Open **Command Prompt 1**.
+Open **Terminal 1**.
 
 Run:
 
@@ -129,110 +117,67 @@ Run:
 omniroute
 ```
 
-Depending on the installed version, you may also need:
+Keep this terminal running.
 
-```cmd
-omniroute serve
-```
-
-Keep this terminal open.
-
-OmniRoute should provide a local service on:
+OmniRoute should listen on:
 
 ```text
 http://localhost:20128
 ```
 
-The API endpoint used by Claude Code is:
-
-```text
-http://localhost:20128/v1
-```
-
----
-
-# 5. Open the OmniRoute Dashboard
-
-Open your browser and go to:
+Open the dashboard:
 
 ```text
 http://localhost:20128
 ```
 
-From the OmniRoute dashboard, configure the AI provider(s) you want to use.
-
-After configuring the provider, create an OmniRoute API key.
-
-Keep the API key private.
+> Depending on your installed OmniRoute version, the startup command may differ. Use `omniroute --help` if necessary.
 
 ---
 
-# 6. Create Your Claude Code Project
+# 🔑 3. Configure OmniRoute
 
-Open **Command Prompt 2**.
-
-Navigate to your project:
-
-```cmd
-cd C:\Users\Lenovo\workspace\test
-```
-
-If the directory does not exist:
-
-```cmd
-mkdir C:\Users\Lenovo\workspace\test
-```
-
-Then:
-
-```cmd
-cd C:\Users\Lenovo\workspace\test
-```
-
----
-
-# 7. Create the `.claude` Directory
-
-Run:
-
-```cmd
-mkdir .claude
-```
-
-Your project should now look like:
+Open the OmniRoute dashboard:
 
 ```text
-C:\Users\Lenovo\workspace\test
-│
-└── .claude
+http://localhost:20128
 ```
+
+Configure the AI providers/models that you want OmniRoute to use.
+
+For example:
+
+```text
+Anthropic
+OpenRouter
+GitHub Models
+OpenAI
+Other supported providers
+```
+
+After configuring your providers, create an **OmniRoute API key**.
+
+Example:
+
+```text
+OmniRoute API Key
+└── <your-secret-key>
+```
+
+Keep this key private.
+
+> Never commit the real API key to GitHub.
 
 ---
 
-# 8. Create Claude Code Configuration
+# 🧪 4. Verify OmniRoute API Access
 
-Create:
+Before configuring Claude Code, verify that OmniRoute is working.
 
-```text
-.claude\settings.local.json
-```
-
-You can use Notepad:
+In **Terminal 2**, use:
 
 ```cmd
-notepad .claude\settings.local.json
-```
-
-If Windows asks whether you want to create the file, click **Yes**.
-
-Add:
-
-```json
-{
-  "anthropic_api_url": "http://localhost:20128/v1",
-  "anthropic_api_key": "YOUR_OMNIROUTE_API_KEY",
-  "model": "auto"
-}
+curl -H "Authorization: Bearer YOUR_OMNIROUTE_API_KEY" http://localhost:20128/v1/models
 ```
 
 Replace:
@@ -243,69 +188,354 @@ YOUR_OMNIROUTE_API_KEY
 
 with your actual OmniRoute API key.
 
+A successful response should contain the models available through OmniRoute.
+
 For example:
 
 ```json
 {
-  "anthropic_api_url": "http://localhost:20128/v1",
-  "anthropic_api_key": "YOUR_REAL_KEY_HERE",
-  "model": "auto"
+  "data": [
+    {
+      "id": "anthropic/claude-opus-5"
+    },
+    {
+      "id": "anthropic/claude-sonnet-5"
+    }
+  ]
 }
 ```
 
-Save the file with:
-
-```text
-Ctrl + S
-```
-
-Then close Notepad.
+The exact model names depend on your OmniRoute configuration.
 
 ---
 
-# 🔐 IMPORTANT — API Key Security
+# 🔐 5. Configure Claude Code Authentication
 
-**Never commit your real API key to GitHub.**
+Claude Code needs to know that OmniRoute is the local Anthropic API endpoint.
 
-Do NOT put a real key inside:
+The recommended environment variables are:
 
 ```text
-settings.local.json
+ANTHROPIC_BASE_URL
+ANTHROPIC_AUTH_TOKEN
 ```
 
-if that file is going to be committed.
+## Recommended Configuration
 
-Instead, keep:
+In **Terminal 2**:
 
-```text
-settings.local.json
+```cmd
+set ANTHROPIC_BASE_URL=http://localhost:20128
 ```
 
-local to your computer.
+Then:
 
-For your GitHub repository, provide an example file:
+```cmd
+set ANTHROPIC_AUTH_TOKEN=YOUR_OMNIROUTE_API_KEY
+```
+
+Clear a normal Anthropic API key if one is already set:
+
+```cmd
+set ANTHROPIC_API_KEY=
+```
+
+Verify:
+
+```cmd
+echo %ANTHROPIC_BASE_URL%
+```
+
+Expected:
 
 ```text
-settings.local.example.json
+http://localhost:20128
+```
+
+Verify that the token exists without printing the entire token:
+
+```cmd
+echo %ANTHROPIC_AUTH_TOKEN:~0,8%********
+```
+
+---
+
+# ⚠️ Important: Do NOT use `/v1`
+
+For Claude Code, use:
+
+```text
+http://localhost:20128
+```
+
+Correct:
+
+```cmd
+set ANTHROPIC_BASE_URL=http://localhost:20128
+```
+
+Incorrect:
+
+```cmd
+set ANTHROPIC_BASE_URL=http://localhost:20128/v1
+```
+
+The `/v1` path is used by API clients that directly call the OpenAI-compatible API.
+
+Claude Code uses the Anthropic API format and adds the required API path itself.
+
+---
+
+# 💾 6. Permanent Windows Configuration
+
+If you want the configuration to survive closing CMD, use `setx`.
+
+```cmd
+setx ANTHROPIC_BASE_URL "http://localhost:20128"
+```
+
+Set the OmniRoute token:
+
+```cmd
+setx ANTHROPIC_AUTH_TOKEN "YOUR_OMNIROUTE_API_KEY"
+```
+
+> Close and reopen Command Prompt after using `setx`.
+
+Then verify:
+
+```cmd
+echo %ANTHROPIC_BASE_URL%
+```
+
+And:
+
+```cmd
+echo %ANTHROPIC_AUTH_TOKEN:~0,8%********
+```
+
+---
+
+# 🤖 7. Model Selection
+
+Claude Code may request a model such as:
+
+```text
+claude-opus-5
+```
+
+OmniRoute can reject this with:
+
+```text
+400 Ambiguous model 'claude-opus-5'
+```
+
+because multiple providers may expose a model with the same name.
+
+For example:
+
+```text
+claude-opus-5
+```
+
+may be ambiguous.
+
+A provider-qualified model is unambiguous:
+
+```text
+anthropic/claude-opus-5
+```
+
+or:
+
+```text
+gh/claude-opus-5
+```
+
+The exact provider/model identifiers depend on the models configured in OmniRoute.
+
+Check the available models:
+
+```cmd
+curl -H "Authorization: Bearer YOUR_OMNIROUTE_API_KEY" http://localhost:20128/v1/models
+```
+
+Use an exact model ID returned by OmniRoute.
+
+---
+
+# 🔄 8. Automatic Model Routing
+
+If your installed OmniRoute version provides a virtual automatic-routing model, use the exact model identifier shown by:
+
+```cmd
+curl -H "Authorization: Bearer YOUR_OMNIROUTE_API_KEY" http://localhost:20128/v1/models
+```
+
+Do **not** assume that:
+
+```text
+auto
+```
+
+or:
+
+```text
+auto/coding
+```
+
+is available on every OmniRoute version.
+
+If your OmniRoute installation exposes:
+
+```text
+auto/coding
+```
+
+then it can be used as the Claude Code model.
+
+For example:
+
+```cmd
+set ANTHROPIC_MODEL=auto/coding
+```
+
+If `auto/coding` is not listed by `/v1/models`, use a model ID that is actually returned by OmniRoute.
+
+---
+
+# 🛠️ 9. Optional: OmniRoute Claude Setup
+
+Recent OmniRoute versions provide:
+
+```cmd
+omniroute setup-claude
+```
+
+This can generate/configure Claude Code profiles.
+
+If OmniRoute requires authentication while connecting to itself, provide the API key:
+
+```cmd
+omniroute setup-claude --api-key "YOUR_OMNIROUTE_API_KEY"
+```
+
+If this command returns:
+
+```text
+HTTP 401 — Authentication required
+```
+
+verify that:
+
+1. OmniRoute is running.
+2. The API key is valid.
+3. The key belongs to the running OmniRoute instance.
+4. `/v1/models` works with the same key.
+
+Test:
+
+```cmd
+curl -H "Authorization: Bearer YOUR_OMNIROUTE_API_KEY" http://localhost:20128/v1/models
+```
+
+If this returns the model list successfully, OmniRoute authentication is working.
+
+---
+
+# 📁 10. Claude Code Workspace
+
+Recommended workspace:
+
+```text
+C:\workspace
+```
+
+Example project:
+
+```text
+C:\workspace\test
+```
+
+Create it:
+
+```cmd
+mkdir C:\workspace\test
+```
+
+Enter it:
+
+```cmd
+cd /d C:\workspace\test
+```
+
+Start Claude Code:
+
+```cmd
+claude
+```
+
+---
+
+# 📂 11. Claude Code Local Configuration
+
+A project can contain:
+
+```text
+C:\workspace\test
+│
+└── .claude
+    └── settings.local.json
+```
+
+Create the directory:
+
+```cmd
+mkdir .claude
+```
+
+Create the file:
+
+```cmd
+notepad .claude\settings.local.json
+```
+
+### Important
+
+Do not put your real OmniRoute API key into a Git-tracked configuration file.
+
+Environment variables are preferred for secrets.
+
+If you need a local settings file, keep it uncommitted.
+
+---
+
+# 🔒 12. Example Claude Configuration
+
+For a public repository, provide an example file:
+
+```text
+.claude\settings.local.example.json
 ```
 
 Example:
 
 ```json
 {
-  "anthropic_api_url": "http://localhost:20128/v1",
-  "anthropic_api_key": "YOUR_OMNIROUTE_API_KEY",
-  "model": "auto"
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://localhost:20128",
+    "ANTHROPIC_AUTH_TOKEN": "YOUR_OMNIROUTE_API_KEY"
+  }
 }
 ```
 
+Do not put the real key in this example file.
+
 ---
 
-# 9. Add `.gitignore`
+# 🚫 13. Git Security
 
-If this setup is also stored in GitHub, create a `.gitignore` file.
-
-Example:
+Add this to `.gitignore`:
 
 ```gitignore
 # Claude Code local configuration
@@ -315,7 +545,7 @@ Example:
 .env
 .env.*
 
-# Node.js
+# Node
 node_modules/
 
 # Logs
@@ -329,149 +559,244 @@ Desktop.ini
 .DS_Store
 ```
 
-This prevents your local credentials from accidentally being committed.
+Check the repository before committing:
+
+```cmd
+git status
+```
+
+Make sure your real credentials are not listed.
 
 ---
 
-# 10. Clear Conflicting Environment Variables
+# ▶️ 14. Start Claude Code
 
-Claude Code may use environment variables instead of the local configuration.
+After OmniRoute is running:
 
-Inside your project CMD window, run:
+### Terminal 1
 
 ```cmd
+omniroute
+```
+
+### Terminal 2
+
+```cmd
+cd /d C:\workspace\test
+set ANTHROPIC_BASE_URL=http://localhost:20128
+set ANTHROPIC_AUTH_TOKEN=YOUR_OMNIROUTE_API_KEY
 set ANTHROPIC_API_KEY=
-```
-
-This clears the API key for the current CMD session.
-
-You can verify it with:
-
-```cmd
-echo %ANTHROPIC_API_KEY%
-```
-
-It should return an empty line.
-
-> If you have configured `ANTHROPIC_API_KEY` as a permanent Windows environment variable, remove or update it separately if it conflicts with your OmniRoute setup.
-
----
-
-# 11. Start Claude Code
-
-Make sure you are inside your project:
-
-```cmd
-cd C:\Users\Lenovo\workspace\test
-```
-
-Then:
-
-```cmd
 claude
 ```
 
-Claude Code should now use OmniRoute through:
+Do not run:
 
 ```text
-http://localhost:20128/v1
+/login
 ```
+
+when using OmniRoute authentication.
 
 ---
 
-# 🔄 Daily Startup After Windows Restart
+# 🔄 Daily Usage
 
-You do **not** need to reinstall anything every time.
+After Windows restarts, you don't need to reinstall anything.
 
-You only need to start OmniRoute and Claude Code.
-
-## Terminal 1 — OmniRoute
-
-Open CMD:
+### Terminal 1
 
 ```cmd
 omniroute
 ```
 
-Keep this terminal running.
+Leave it running.
 
-You can minimize it.
-
----
-
-## Terminal 2 — Claude Code
-
-Open another CMD:
+### Terminal 2
 
 ```cmd
-cd C:\Users\Lenovo\workspace\test
-```
-
-Clear any conflicting API key:
-
-```cmd
-set ANTHROPIC_API_KEY=
-```
-
-Start Claude:
-
-```cmd
+cd /d C:\workspace\test
 claude
 ```
 
-That's it.
+If you configured the environment variables permanently using `setx`, you don't need to enter them again.
 
 ---
 
-# ⚡ Quick Start
+# 🛠️ Windows Automation Scripts
 
-After everything has been installed, your normal workflow is:
+Recommended repository structure:
 
-### CMD 1
+```text
+omniroute-claude-setup/
+│
+├── README.md
+├── .gitignore
+│
+├── windows/
+│   ├── install.cmd
+│   ├── start-omniroute.cmd
+│   └── start-claude.cmd
+│
+└── .claude/
+    └── settings.local.example.json
+```
 
-```cmd
+---
+
+## `windows/install.cmd`
+
+```bat
+@echo off
+title OmniRoute + Claude Code Installer
+
+echo ==========================================
+echo OmniRoute + Claude Code Installation
+echo ==========================================
+
+echo.
+echo Checking Node.js...
+node -v
+
+if errorlevel 1 (
+    echo Node.js is not installed.
+    pause
+    exit /b 1
+)
+
+echo.
+echo Checking npm...
+npm -v
+
+if errorlevel 1 (
+    echo npm is not available.
+    pause
+    exit /b 1
+)
+
+echo.
+echo Installing Claude Code and OmniRoute...
+
+call npm install -g @anthropic-ai/claude-code omniroute
+
+if errorlevel 1 (
+    echo Installation failed.
+    pause
+    exit /b 1
+)
+
+echo.
+echo Installation completed successfully.
+
+echo.
+echo Claude Code:
+claude --version
+
+echo.
+echo OmniRoute:
+omniroute --help
+
+pause
+```
+
+---
+
+# `windows/start-omniroute.cmd`
+
+```bat
+@echo off
+
+title OmniRoute
+
+echo ==========================================
+echo Starting OmniRoute
+echo ==========================================
+
+echo.
+echo Dashboard:
+echo http://localhost:20128
+echo.
+
 omniroute
+
+pause
 ```
 
-### CMD 2
+---
 
-```cmd
-cd C:\Users\Lenovo\workspace\test
+# `windows/start-claude.cmd`
+
+```bat
+@echo off
+
+title Claude Code + OmniRoute
+
+echo ==========================================
+echo Claude Code + OmniRoute
+echo ==========================================
+
+cd /d "%~dp0\.."
+
+set ANTHROPIC_BASE_URL=http://localhost:20128
 set ANTHROPIC_API_KEY=
+
+if "%ANTHROPIC_AUTH_TOKEN%"=="" (
+    set /p ANTHROPIC_AUTH_TOKEN="Enter OmniRoute API Key: "
+)
+
+echo.
+echo Starting Claude Code...
+echo.
+
 claude
+
+pause
 ```
+
+This script intentionally asks for the OmniRoute key instead of storing it inside the repository.
 
 ---
 
 # 🧪 Troubleshooting
 
-## OmniRoute command not found
-
-If you get:
-
-```text
-'omniroute' is not recognized as an internal or external command
-```
+## `claude` is not recognized
 
 Check:
 
 ```cmd
-npm -g bin
+where claude
 ```
 
-Then check the npm global installation:
+Then:
 
 ```cmd
 npm list -g --depth=0
 ```
 
-You should see:
+If necessary, reinstall:
 
-```text
-omniroute
+```cmd
+npm install -g @anthropic-ai/claude-code
 ```
 
-You can also reinstall:
+Close and reopen CMD afterward.
+
+---
+
+## `omniroute` is not recognized
+
+Check:
+
+```cmd
+where omniroute
+```
+
+Then:
+
+```cmd
+npm list -g --depth=0
+```
+
+Reinstall if necessary:
 
 ```cmd
 npm install -g omniroute
@@ -479,15 +804,13 @@ npm install -g omniroute
 
 ---
 
-# 🔍 Check OmniRoute Port
-
-To check whether OmniRoute is listening on port `20128`:
+## Check OmniRoute port
 
 ```cmd
 netstat -ano | findstr :20128
 ```
 
-If it is running, you should see something similar to:
+Expected:
 
 ```text
 TCP    127.0.0.1:20128    0.0.0.0:0    LISTENING
@@ -495,7 +818,7 @@ TCP    127.0.0.1:20128    0.0.0.0:0    LISTENING
 
 ---
 
-# 🌐 Test OmniRoute Dashboard
+## Test OmniRoute
 
 Open:
 
@@ -507,212 +830,222 @@ If the dashboard loads, OmniRoute is running.
 
 ---
 
-# 🔎 Check Claude Code
+## `Not logged in · Please run /login`
 
-Check the Claude Code installation:
+This normally means Claude Code is not receiving the OmniRoute authentication configuration.
+
+Check:
+
+```cmd
+echo %ANTHROPIC_BASE_URL%
+```
+
+Expected:
+
+```text
+http://localhost:20128
+```
+
+Check the token:
+
+```cmd
+echo %ANTHROPIC_AUTH_TOKEN:~0,8%********
+```
+
+Also check:
+
+```cmd
+echo %ANTHROPIC_API_KEY%
+```
+
+If you're using OmniRoute, avoid accidentally supplying a different Anthropic API key.
+
+Restart Claude Code after changing the variables.
+
+---
+
+## `HTTP 401 — Authentication required`
+
+Test the API directly:
+
+```cmd
+curl -i -H "Authorization: Bearer YOUR_OMNIROUTE_API_KEY" http://localhost:20128/v1/models
+```
+
+If you receive:
+
+```text
+HTTP/1.1 200
+```
+
+authentication is working.
+
+If you receive:
+
+```text
+HTTP/1.1 401
+```
+
+the API key is not being accepted by the running OmniRoute instance.
+
+Generate/check the key in the OmniRoute dashboard.
+
+---
+
+## `400 Ambiguous model`
+
+Example:
+
+```text
+API Error: 400 Ambiguous model 'claude-opus-5'
+```
+
+This means OmniRoute cannot determine which provider should handle the model.
+
+Check available models:
+
+```cmd
+curl -H "Authorization: Bearer YOUR_OMNIROUTE_API_KEY" http://localhost:20128/v1/models
+```
+
+Then use the exact provider/model identifier returned by OmniRoute.
+
+Example:
+
+```text
+anthropic/claude-opus-5
+```
+
+instead of:
+
+```text
+claude-opus-5
+```
+
+---
+
+## `setup-claude` returns 401
+
+Run:
+
+```cmd
+omniroute setup-claude --api-key "YOUR_OMNIROUTE_API_KEY"
+```
+
+If it still returns:
+
+```text
+HTTP 401 — Authentication required
+```
+
+verify:
+
+```cmd
+curl -H "Authorization: Bearer YOUR_OMNIROUTE_API_KEY" http://localhost:20128/v1/models
+```
+
+If `/v1/models` succeeds, the OmniRoute server is reachable and the API key is valid; investigate the `setup-claude` command/version next.
+
+---
+
+# 🔍 Useful Diagnostics
+
+Check Claude Code:
 
 ```cmd
 claude --version
 ```
 
-Check the available commands:
+Check Claude Code help:
 
 ```cmd
 claude --help
 ```
 
----
-
-# 🛑 OmniRoute Is Not Running
-
-If Claude Code cannot connect to OmniRoute, first check:
+Check OmniRoute:
 
 ```cmd
-netstat -ano | findstr :20128
+omniroute --version
 ```
 
-If nothing is returned, start OmniRoute:
+Check OmniRoute help:
 
 ```cmd
-omniroute
+omniroute --help
 ```
 
-Then retry:
+Check API:
 
 ```cmd
-claude
+curl -i http://localhost:20128/v1/models
 ```
 
----
+Check authenticated API:
 
-# 🔐 API Key Problems
-
-If OmniRoute reports an authentication error:
-
-1. Open the OmniRoute dashboard.
-2. Verify the provider configuration.
-3. Generate/check your OmniRoute API key.
-4. Update:
-
-```text
-.claude\settings.local.json
-```
-
-5. Restart Claude Code.
-
----
-
-# 🤖 Model Configuration
-
-This setup uses:
-
-```json
-"model": "auto"
-```
-
-The `auto` model allows OmniRoute to handle model routing based on its configured providers.
-
-If your OmniRoute version/documentation specifies a different model identifier, use the identifier supported by that version.
-
----
-
-# 📁 Recommended Repository Structure
-
-A clean GitHub repository can look like this:
-
-```text
-omniroute-claude-code-setup/
-│
-├── README.md
-│
-├── windows/
-│   ├── install.cmd
-│   ├── start-omniroute.cmd
-│   └── start-claude.cmd
-│
-├── claude/
-│   └── settings.local.example.json
-│
-└── .gitignore
-```
-
----
-
-# 🛠️ Optional Windows Scripts
-
-## `windows/install.cmd`
-
-```bat
-@echo off
-
-echo ==========================================
-echo OmniRoute + Claude Code Installation
-echo ==========================================
-
-echo.
-echo Checking Node.js...
-node -v
-
-echo.
-echo Checking npm...
-npm -v
-
-echo.
-echo Installing OmniRoute...
-npm install -g omniroute
-
-echo.
-echo Installing Claude Code...
-npm install -g @anthropic-ai/claude-code
-
-echo.
-echo Installation completed.
-
-pause
-```
-
----
-
-## `windows/start-omniroute.cmd`
-
-```bat
-@echo off
-
-echo ==========================================
-echo Starting OmniRoute
-echo ==========================================
-
-omniroute
-
-pause
-```
-
----
-
-## `windows/start-claude.cmd`
-
-Update the project path if required:
-
-```bat
-@echo off
-
-echo ==========================================
-echo Starting Claude Code
-echo ==========================================
-
-cd /d C:\Users\Lenovo\workspace\test
-
-set ANTHROPIC_API_KEY=
-
-claude
-
-pause
+```cmd
+curl -i -H "Authorization: Bearer YOUR_OMNIROUTE_API_KEY" http://localhost:20128/v1/models
 ```
 
 ---
 
 # 📋 Configuration Summary
 
-| Component           | Configuration                    |
-| ------------------- | -------------------------------- |
-| Operating System    | Windows 10/11                    |
-| Node.js             | LTS                              |
-| Claude Code         | npm global installation          |
-| OmniRoute           | npm global installation          |
-| OmniRoute Dashboard | `http://localhost:20128`         |
-| OmniRoute API       | `http://localhost:20128/v1`      |
-| Claude Model        | `auto`                           |
-| Project             | `C:\Users\Lenovo\workspace\test` |
-| Claude Config       | `.claude/settings.local.json`    |
+| Component               | Configuration                                                                    |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| Operating System        | Windows 10/11                                                                    |
+| Claude Code             | npm global installation                                                          |
+| OmniRoute               | npm global installation                                                          |
+| OmniRoute Dashboard     | `http://localhost:20128`                                                         |
+| Claude Code Base URL    | `http://localhost:20128`                                                         |
+| OmniRoute API           | `http://localhost:20128/v1`                                                      |
+| Authentication          | `ANTHROPIC_AUTH_TOKEN`                                                           |
+| Claude API Key Variable | Do not use for OmniRoute unless specifically required                            |
+| Workspace               | `C:\workspace`                                                                   |
+| Example Project         | `C:\workspace\test`                                                              |
+| Claude Project Config   | `.claude\settings.local.json`                                                    |
+| Model                   | Use an exact model ID returned by OmniRoute                                      |
+| Auto Routing            | Use only if the installed OmniRoute version exposes a virtual auto-routing model |
 
 ---
 
-# 🔗 Official OmniRoute
-
-Official GitHub repository:
-
-https://github.com/diegosouzapw/OmniRoute
-
-Before following commands from this guide, check the official OmniRoute documentation for changes to installation commands, configuration options, ports, or supported model names.
-
----
-
-# ⚠️ Security Checklist
+# 🔐 Security Checklist
 
 Before pushing this repository to GitHub:
 
 * [ ] No real API keys in `README.md`
 * [ ] No real API keys in `.cmd` files
-* [ ] No real API keys in `.json` example files
-* [ ] `.claude/settings.local.json` is in `.gitignore`
-* [ ] `.env` is in `.gitignore`
+* [ ] No real API keys in JSON example files
+* [ ] `.claude/settings.local.json` is ignored
+* [ ] `.env` files are ignored
 * [ ] Provider credentials are not committed
-* [ ] Previously exposed keys have been revoked/rotated
+* [ ] `node_modules/` is ignored
+* [ ] Previously exposed API keys have been revoked/rotated
+* [ ] `git status` does not show credential files
+
+If a secret has accidentally been committed or exposed, **rotate/revoke it immediately**.
+
+---
+
+# 🔗 Official OmniRoute
+
+Official OmniRoute repository:
+
+https://github.com/diegosouzapw/OmniRoute
+
+Always check the official OmniRoute documentation for changes to:
+
+* Installation commands
+* Authentication
+* API endpoints
+* Model identifiers
+* Claude Code integration
+* Configuration options
+* Supported providers
 
 ---
 
 # 📝 License
 
-This repository contains setup documentation and helper scripts for configuring OmniRoute and Claude Code.
+This repository contains setup documentation and optional Windows helper scripts for configuring OmniRoute and Claude Code.
 
-OmniRoute and Claude Code are separate projects with their own licenses and terms.
+OmniRoute and Claude Code are separate projects and remain subject to their respective licenses and terms.
